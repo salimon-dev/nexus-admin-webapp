@@ -2,9 +2,16 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Row, Select, Space, Table } from "antd";
 import { useState } from "react";
 import CreateEntityModal from "./CreateEntityModal";
+import { useQuery } from "react-query";
+import { searchEntities } from "../../Rest/Entities";
 
 export default function Entities() {
   const [isCreating, setIsCreating] = useState(false);
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useQuery(["entites", page], async () => {
+    const response = await searchEntities({ page, page_size: 10 });
+    return response.data;
+  });
   return (
     <Row>
       <CreateEntityModal
@@ -65,6 +72,14 @@ export default function Entities() {
             </Col>
             <Col xs={24}>
               <Table
+                loading={isLoading}
+                pagination={{
+                  pageSize: 10,
+                  current: page,
+                  onChange: (value) => setPage(value),
+                  total: data?.total,
+                }}
+                dataSource={data?.data}
                 columns={[
                   { title: "#", dataIndex: "num", width: 64 },
                   { title: "entityname", dataIndex: "entityname" },

@@ -1,10 +1,44 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Row, Select, Space, Table } from "antd";
 import { useState } from "react";
 import CreateUserModal from "./CreateUserModal";
+import { useQuery } from "react-query";
+import { searchUsers } from "../../Rest/Users";
+import { dateToString, userRoleToString, userStatusToString } from "../../helpers";
 
+const pageSize = 10;
 export default function Users() {
   const [isCreating, setIsCreating] = useState(false);
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useQuery(["users", page], async () => {
+    const response = await searchUsers({ page, page_size: 10 });
+    console.log(response.data);
+    return response.data;
+  });
+  console.log(data);
+
+  function dataSource() {
+    if (isLoading) return [];
+    if (!data) return [];
+    return data.data.map((item, i) => {
+      const num = i + 1 + (page - 1) * pageSize;
+      return {
+        num,
+        username: item.username,
+        role: userRoleToString(item.role),
+        status: userStatusToString(item.status),
+        credit: item.credit,
+        balance: item.balance,
+        registered_at: dateToString(item.registered_at),
+        actions: (
+          <Space>
+            <Button shape="circle" type="text" icon={<EditOutlined />} />
+            <Button shape="circle" type="text" icon={<DeleteOutlined />} />
+          </Space>
+        ),
+      };
+    });
+  }
   return (
     <Row>
       <CreateUserModal
@@ -65,16 +99,23 @@ export default function Users() {
             </Col>
             <Col xs={24}>
               <Table
+                loading={isLoading}
+                dataSource={dataSource()}
+                pagination={{
+                  current: page,
+                  pageSize: 10,
+                  onChange: (value) => setPage(value),
+                  total: data?.total,
+                }}
                 columns={[
                   { title: "#", dataIndex: "num", width: 64 },
-                  { title: "username", dataIndex: "username" },
-                  { title: "role", dataIndex: "role" },
-                  { title: "status", dataIndex: "status" },
-                  { title: "credit", dataIndex: "credit" },
-                  { title: "usage", dataIndex: "usage" },
-                  { title: "fame", dataIndex: "fame" },
-                  { title: "registered at", dataIndex: "registered_at" },
-                  { title: "", dataIndex: "actions" },
+                  { title: "username", dataIndex: "username", key: "username" },
+                  { title: "role", dataIndex: "role", key: "role" },
+                  { title: "status", dataIndex: "status", key: "status" },
+                  { title: "credit", dataIndex: "credit", key: "credit" },
+                  { title: "balance", dataIndex: "balance", key: "balance" },
+                  { title: "registered at", dataIndex: "registered_at", key: "registered_at" },
+                  { title: "", dataIndex: "actions", key: "actions" },
                 ]}
               />
             </Col>
