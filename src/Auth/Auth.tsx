@@ -4,7 +4,7 @@ import * as yup from "yup";
 import { useFormik } from "formik";
 import { login } from "../Rest/Auth";
 import { useState } from "react";
-import { accessTokenAtom, profileAtom, refreshTokenAtom, store } from "../Providers/Store";
+import { setStorage } from "../Providers/Store";
 const validationSchema = yup.object({
   username: yup.string().required(),
   password: yup.string().required(),
@@ -23,9 +23,7 @@ export default function Auth() {
       const result = await login(values);
       switch (result.status) {
         case 200:
-          store.set(accessTokenAtom, result.data.access_token);
-          store.set(refreshTokenAtom, result.data.refresh_token);
-          store.set(profileAtom, result.data.data);
+          setStorage(result.data);
           return;
         case 401:
           setUnauthorized(true);

@@ -1,36 +1,33 @@
 import Auth from "./Auth/Auth";
 import { BrowserRouter } from "react-router-dom";
 import Layout from "./App/App";
-import { useIsLoggedIn } from "./Providers/Auth";
-import { useQuery } from "react-query";
-import { getProfile, rotateToken } from "./Rest/Auth";
-import { accessTokenAtom, profileAtom, refreshTokenAtom, store } from "./Providers/Store";
+import { setupStorage } from "./Providers/Store";
 import Splash from "./Components/Splash/Splash";
+import { useEffect, useState } from "react";
+import { useIsLoggedIn } from "./Providers/Auth";
 
 export default function App() {
+  const [phase, setPhase] = useState<"init" | "guest" | "member">("init");
   const isLoggedIn = useIsLoggedIn();
 
-  const { isLoading } = useQuery(["profile"], async () => {
-    const response = await getProfile();
-    if (response.status === 200) {
-      store.set(profileAtom, response.data);
-    } else if (response.status === 401) {
-      const response = await rotateToken();
-      if (response.status === 401) {
-        store.set(profileAtom, undefined);
-        store.set(accessTokenAtom, undefined);
-        store.set(refreshTokenAtom, undefined);
+  useEffect(() => {
+    setupStorage().then((result) => {
+      if (result) {
+        setPhase("member");
+      } else {
+        setPhase("guest");
       }
-      if (response.status === 200) {
-        store.set(profileAtom, response.data.data);
-        store.set(accessTokenAtom, response.data.access_token);
-        store.set(refreshTokenAtom, response.data.refresh_token);
-      }
-    }
-  });
+    });
+  }, []);
 
-  if (isLoading) return <Splash status="loading..." />;
-  if (!isLoggedIn) {
+  useEffect(() => {
+    if (isLoggedIn) {
+      setPhase("member");
+    }
+  }, [isLoggedIn]);
+
+  if (phase === "init") return <Splash status="loading..." />;
+  if (phase === "guest") {
     return <Auth />;
   }
   return (

@@ -1,47 +1,74 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, Row, Select, Space, Table } from "antd";
+import { Button, Card, Col, Row, Space, Table, Tooltip } from "antd";
 import { useState } from "react";
-import CreateUserModal from "./CreateUserModal";
 import { useQuery } from "react-query";
-import { searchUsers } from "../../Rest/Users";
 import { dateToString, userRoleToString, userStatusToString } from "../../helpers";
+import DeleteUserModal from "./DeleteUserModal";
+import EditUserModal from "./EditUserModal";
+import CreateEntityModal from "./CreateUserModal";
+import { searchUsers } from "../../Rest/Users";
 
 const pageSize = 10;
+
 export default function Users() {
   const [isCreating, setIsCreating] = useState(false);
+
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery(["users", page], async () => {
-    const response = await searchUsers({ page, page_size: 10 });
-    console.log(response.data);
+    const response = await searchUsers({ page, page_size: pageSize });
     return response.data;
   });
-  console.log(data);
 
   function dataSource() {
     if (isLoading) return [];
     if (!data) return [];
-    return data.data.map((item, i) => {
-      const num = i + 1 + (page - 1) * pageSize;
+    return data.data.map((item, index) => {
+      const num = index + 1 + (page - 1) * pageSize;
       return {
+        key: item.id,
         num,
         username: item.username,
-        role: userRoleToString(item.role),
-        status: userStatusToString(item.status),
         credit: item.credit,
         balance: item.balance,
+        status: userStatusToString(item.status),
+        role: userRoleToString(item.role),
         registered_at: dateToString(item.registered_at),
+        updated_at: dateToString(item.updated_at),
         actions: (
           <Space>
-            <Button shape="circle" type="text" icon={<EditOutlined />} />
-            <Button shape="circle" type="text" icon={<DeleteOutlined />} />
+            <EditUserModal
+              record={item}
+              trigger={(open) => (
+                <Tooltip title="edit">
+                  <Button shape="circle" type="text" onClick={open}>
+                    <EditOutlined />
+                  </Button>
+                </Tooltip>
+              )}
+            />
+            <DeleteUserModal
+              record={item}
+              trigger={(open) => (
+                <Tooltip title="delete">
+                  <Button shape="circle" type="text" onClick={open}>
+                    <DeleteOutlined />
+                  </Button>
+                </Tooltip>
+              )}
+            />
           </Space>
         ),
       };
     });
   }
+  function total() {
+    if (isLoading) return 0;
+    if (!data) return 0;
+    return data.total;
+  }
   return (
     <Row>
-      <CreateUserModal
+      <CreateEntityModal
         open={isCreating}
         onClose={() => {
           setIsCreating(false);
@@ -53,6 +80,7 @@ export default function Users() {
           extra={
             <Space>
               <Button
+                variant="filled"
                 shape="circle"
                 onClick={() => {
                   setIsCreating(true);
@@ -65,56 +93,23 @@ export default function Users() {
         >
           <Row>
             <Col xs={24}>
-              <Form layout="vertical">
-                <Row gutter={[12, 12]}>
-                  <Col xs={24} md={12} lg={6}>
-                    <Form.Item name="status" label="status">
-                      <Select
-                        defaultValue="0"
-                        options={[
-                          { label: "all", value: "0" },
-                          { label: "active", value: "1" },
-                          { label: "inactive", value: "2" },
-                          { label: "pending", value: "3" },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12} lg={6}>
-                    <Form.Item name="role" label="role">
-                      <Select
-                        defaultValue="0"
-                        options={[
-                          { label: "all", value: "0" },
-                          { label: "keymaker", value: "1" },
-                          { label: "admin", value: "2" },
-                          { label: "developer", value: "3" },
-                          { label: "member", value: "4" },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Form>
-            </Col>
-            <Col xs={24}>
               <Table
-                loading={isLoading}
-                dataSource={dataSource()}
                 pagination={{
                   current: page,
-                  pageSize: 10,
+                  pageSize,
+                  total: total(),
                   onChange: (value) => setPage(value),
-                  total: data?.total,
                 }}
+                dataSource={dataSource()}
                 columns={[
-                  { title: "#", dataIndex: "num", width: 64 },
-                  { title: "username", dataIndex: "username", key: "username" },
-                  { title: "role", dataIndex: "role", key: "role" },
-                  { title: "status", dataIndex: "status", key: "status" },
-                  { title: "credit", dataIndex: "credit", key: "credit" },
-                  { title: "balance", dataIndex: "balance", key: "balance" },
-                  { title: "registered at", dataIndex: "registered_at", key: "registered_at" },
+                  { title: "#", dataIndex: "num", width: 64, key: "num" },
+                  { title: "Username", dataIndex: "username", key: "username" },
+                  { title: "Role", dataIndex: "role", key: "role" },
+                  { title: "Status", dataIndex: "status", key: "status" },
+                  { title: "Credit", dataIndex: "credit", key: "credit" },
+                  { title: "Balance", dataIndex: "balance", key: "balance" },
+                  { title: "Registered", dataIndex: "registered_at", key: "registered_at" },
+                  { title: "Updated", dataIndex: "updated_at", key: "updated_at" },
                   { title: "", dataIndex: "actions", key: "actions" },
                 ]}
               />

@@ -17,6 +17,7 @@ import { useSetAtom } from "jotai";
 import { accessTokenAtom, profileAtom, refreshTokenAtom } from "../Providers/Store";
 import ProfileDialog from "./ProfileDialog";
 import Entities from "../Containers/Entities/Entities";
+import Invitations from "../Containers/Invitations/Invitations";
 
 export default function App() {
   const navigate = useNavigate();
@@ -130,7 +131,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<div>home</div>} />
             <Route path="/users" element={<Users />} />
-            <Route path="/invitations" element={<div>invitations</div>} />
+            <Route path="/invitations" element={<Invitations />} />
             <Route path="/entities" element={<Entities />} />
           </Routes>
         </Layout.Content>
