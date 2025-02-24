@@ -1,4 +1,4 @@
-FROM node:alpine as buidler
+FROM node:alpine as builder
 
 WORKDIR /app
 
@@ -9,4 +9,4 @@ RUN npm run build
 
 FROM httpd:alpine
 
-COPY --from=build /app/dist /usr/local/apache2/htdocs/
+COPY --from=builder /app/dist /usr/local/apache2/htdocs/
