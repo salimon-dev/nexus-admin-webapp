@@ -13,12 +13,14 @@ export interface ICollection<T> {
   total: number;
 }
 
+// TODO: implement this function
 function rotateToken() {
   const refreshToken = store.get(refreshTokenAtom);
   console.log(refreshToken);
 }
+
 export function httpClient() {
-  const config: CreateAxiosDefaults = { baseURL: import.meta.env["VITE_BASE_URL"] };
+  const config: CreateAxiosDefaults = { baseURL };
   const accessToken = store.get(accessTokenAtom);
   if (accessToken) {
     config.headers = {
@@ -35,25 +37,18 @@ export function httpClient() {
       if (error.status === 401 && accessToken) {
         await rotateToken();
         return error.response;
-        // const rotateResponse = await rotateToken();
-        // console.log("rotate response", rotateResponse);
-        // if (rotateResponse.status !== 200) {
-        //   store.set(accessTokenAtom, undefined);
-        //   store.set(refreshTokenAtom, undefined);
-        //   store.set(profileAtom, undefined);
-        //   return error.response;
-        // } else {
-        //   store.set(accessTokenAtom, rotateResponse.data.access_token);
-        //   store.set(refreshTokenAtom, rotateResponse.data.refresh_token);
-        //   store.set(profileAtom, rotateResponse.data.data);
-        //   if (!error.config) return error.response;
-        //   error.config.headers["Authorization"] = "Bearer" + rotateResponse.data.access_token;
-        //   return client(error.config);
-        // }
       } else {
         return error.response;
       }
     }
   );
   return client;
+}
+
+let baseURL = "http://localhost:8080";
+
+export async function loadConfigs() {
+  const response = await axios.get<{ base_url: string }>("/configs.json").then((response) => response.data);
+  console.log(response);
+  baseURL = response.base_url;
 }
