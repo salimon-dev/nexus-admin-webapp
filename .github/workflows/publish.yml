@@ -46,4 +46,4 @@ jobs:
           username: ${{ secrets.CLUSTER_USERNAME }}
           key: ${{ secrets.CLUSTER_SSH_KEY }}
           port: 22
-          script: kubectl rollout restart deployment/prod-nexus-admin-webapp
+          script: kubectl rollout restart deployment/${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}-nexus-admin-webapp
