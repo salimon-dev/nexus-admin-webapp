@@ -23,9 +23,11 @@ jobs:
       - name: Create .env File
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "VITE_BASE_URL=https://dev.salimon.net/nexus" > .env
+            echo "VITE_NEXUS_BASE_URL=https://dev.salimon.net/nexus" >> .env
+            echo "VITE_APP_BASE_PATH=/nexus/admin" >> .env
           else
-            echo "VITE_BASE_URL=https://dev.salimon.net/nexus" > .env
+            echo "VITE_NEXUS_BASE_URL=https://dev.salimon.net/nexus" >> .env
+            echo "VITE_APP_BASE_PATH=/nexus/admin" >> .env
           fi
 
       - name: Set up Docker Buildx

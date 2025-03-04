@@ -20,7 +20,7 @@ function rotateToken() {
 }
 
 export function httpClient() {
-  const config: CreateAxiosDefaults = { baseURL };
+  const config: CreateAxiosDefaults = { baseURL: import.meta.env["VITE_NEXUS_BASE_URL"] };
   const accessToken = store.get(accessTokenAtom);
   if (accessToken) {
     config.headers = {
@@ -43,12 +43,4 @@ export function httpClient() {
     }
   );
   return client;
-}
-
-let baseURL = "http://localhost:8080";
-
-export async function loadConfigs() {
-  const response = await axios.get<{ base_url: string }>("/configs.json").then((response) => response.data);
-  console.log(response);
-  baseURL = response.base_url;
 }

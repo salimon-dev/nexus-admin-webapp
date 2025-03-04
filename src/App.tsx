@@ -31,7 +31,7 @@ export default function App() {
     return <Auth />;
   }
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env["VITE_APP_BASE_PATH"]}>
       <Layout />
     </BrowserRouter>
   );

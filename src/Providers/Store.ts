@@ -39,7 +39,7 @@ export async function setupStorage(): Promise<boolean> {
   if (!storage) return false;
   try {
     const response = await axios.get("/profile", {
-      baseURL: import.meta.env["VITE_BASE_URL"],
+      baseURL: import.meta.env["VITE_NEXUS_BASE_URL"],
       headers: { Authorization: "Bearer " + storage.access_token },
     });
     storage.data = response.data;
@@ -50,7 +50,7 @@ export async function setupStorage(): Promise<boolean> {
       const response = await axios.post<IAuthResponse>(
         "/auth/rotate",
         { token: storage.refresh_token },
-        { baseURL: import.meta.env["VITE_BASE_URL"] }
+        { baseURL: import.meta.env["VITE_NEXUS_BASE_URL"] }
       );
       setStorage(response.data);
       return true;
